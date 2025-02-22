@@ -1,0 +1,57 @@
+server
+{
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	root /var/www/html;
+
+	# Add index.php to the list if you are using PHP
+	index index.html index.htm index.nginx-debian.html;
+
+	server_name vps.aaaaa.aa;
+
+	location /
+	{
+		try_files $uri $uri/ =404;
+	}
+
+	location /vmess/
+	{
+		# Consistent with the path of V2Ray configuration
+		if ($http_upgrade != "websocket")
+		{
+			# Return 404 error when WebSocket upgrading negotiate failed
+			add_header Content-Type text/plain;
+			return 200 'booo';
+		}
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:20000; # Assume WebSocket is listening at localhost on port of 10000
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+		proxy_set_header Host $host;
+		# Show real IP in v2ray access.log
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+
+	location /trojan/
+	{
+		# Consistent with the path of V2Ray configuration
+		if ($http_upgrade != "websocket")
+		{
+			# Return 404 error when WebSocket upgrading negotiate failed
+			add_header Content-Type text/plain;
+			return 200 'booo';
+		}
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:30000; # Assume WebSocket is listening at localhost on port of 10000
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+		proxy_set_header Host $host;
+		# Show real IP in v2ray access.log
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+}
